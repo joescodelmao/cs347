@@ -99,20 +99,53 @@ class SensorFusion:
 
 # 5.3.3 PerceptionModule
 class PerceptionModule:
+    def __init__(self):
+        self.fused_data = None  # Will hold the latest fused sensor data (from SensorFusion)
+
     def handle_fused_data(self, event):
-        pass
+        """Handles the fused data from the SensorFusion module."""
+        self.fused_data = event
+        print("Fused data received and processed.")
 
     def detect_objects(self):
-        pass
+        """Detects objects in the environment based on fused data."""
+        if not self.fused_data:
+            print("No fused data available to detect objects.")
+            return []
+        # Simulating object detection by randomly returning objects
+        detected_objects = ['Car', 'Pedestrian', 'Bicycle', 'Truck']
+        print(f"Detected objects: {', '.join(detected_objects)}")
+        return detected_objects
 
     def detect_lanes(self):
-        pass
+        """Detects lanes from the fused sensor data."""
+        if not self.fused_data:
+            print("No fused data available to detect lanes.")
+            return []
+        # Simulating lane detection
+        lanes = ['Left Lane', 'Right Lane']
+        print(f"Detected lanes: {', '.join(lanes)}")
+        return lanes
 
     def classify_traffic_sign(self):
-        pass
+        """Classifies traffic signs based on the fused data."""
+        if not self.fused_data:
+            print("No fused data available to classify traffic signs.")
+            return None
+        # Simulating traffic sign classification
+        traffic_sign = "Stop Sign"
+        print(f"Classified traffic sign: {traffic_sign}")
+        return traffic_sign
 
     def track_objects(self):
-        pass
+        """Tracks the detected objects over time."""
+        if not self.fused_data:
+            print("No fused data available to track objects.")
+            return []
+        # Simulating object tracking (e.g., by ID)
+        tracked_objects = ['Car ID: 001', 'Pedestrian ID: 002']
+        print(f"Tracking objects: {', '.join(tracked_objects)}")
+        return tracked_objects
 
 # 5.3.4 PlanningModule
 class PlanningModule:
