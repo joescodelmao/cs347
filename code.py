@@ -98,90 +98,282 @@ class SensorFusion:
         }
 
 # 5.3.3 PerceptionModule
+# 5.3.3 PerceptionModule
 class PerceptionModule:
+    def __init__(self):
+        self.fused_data = None  # Will hold the latest fused sensor data (from SensorFusion)
+
     def handle_fused_data(self, event):
-        pass
+        """Handles the fused data from the SensorFusion module."""
+        self.fused_data = event
+        print("Fused data received and processed.")
 
     def detect_objects(self):
-        pass
+        """Detects objects in the environment based on fused data."""
+        if not self.fused_data:
+            print("No fused data available to detect objects.")
+            return []
+        # Simulating object detection by randomly returning objects
+        detected_objects = ['Car', 'Pedestrian', 'Bicycle', 'Truck']
+        print(f"Detected objects: {', '.join(detected_objects)}")
+        return detected_objects
 
     def detect_lanes(self):
-        pass
+        """Detects lanes from the fused sensor data."""
+        if not self.fused_data:
+            print("No fused data available to detect lanes.")
+            return []
+        # Simulating lane detection
+        lanes = ['Left Lane', 'Right Lane']
+        print(f"Detected lanes: {', '.join(lanes)}")
+        return lanes
 
     def classify_traffic_sign(self):
-        pass
+        """Classifies traffic signs based on the fused data."""
+        if not self.fused_data:
+            print("No fused data available to classify traffic signs.")
+            return None
+        # Simulating traffic sign classification
+        traffic_sign = "Stop Sign"
+        print(f"Classified traffic sign: {traffic_sign}")
+        return traffic_sign
 
     def track_objects(self):
-        pass
+        """Tracks the detected objects over time."""
+        if not self.fused_data:
+            print("No fused data available to track objects.")
+            return []
+        # Simulating object tracking (e.g., by ID)
+        tracked_objects = ['Car ID: 001', 'Pedestrian ID: 002']
+        print(f"Tracking objects: {', '.join(tracked_objects)}")
+        return tracked_objects
 
 # 5.3.4 PlanningModule
 class PlanningModule:
+    def __init__(self):
+        self.perception_data = None  # Will hold perception updates (from PerceptionModule)
+        self.vehicle_state = None  # Will hold the current vehicle state (e.g., speed, position)
+
     def handle_perception_update(self, event):
-        pass
+        """Handles perception updates from the PerceptionModule."""
+        self.perception_data = event
+        print("Perception update received.")
 
     def handle_vehicle_state(self, event):
-        pass
+        """Handles vehicle state update."""
+        self.vehicle_state = event
+        print(f"Vehicle state updated: {event}")
 
     def decide_behavior(self):
-        pass
+        """Decides the vehicle's behavior based on perception data and vehicle state."""
+        if not self.perception_data:
+            print("No perception data available to decide behavior.")
+            return "Stop"
+        detected_objects = self.perception_data.detect_objects()
+        lanes = self.perception_data.detect_lanes()
+        
+        # Basic decision-making simulation
+        if 'Pedestrian' in detected_objects:
+            print("Pedestrian detected. Deciding to stop.")
+            return "Stop"
+        if 'Car' in detected_objects and lanes:
+            print("Car detected. Deciding to overtake.")
+            return "Overtake"
+        return "Continue"
 
     def plan_trajectory(self):
-        pass
+        """Plans the vehicle's trajectory."""
+        if not self.vehicle_state:
+            print("No vehicle state available to plan trajectory.")
+            return None
+        # Simulating trajectory planning
+        trajectory = {"start": self.vehicle_state, "end": "Destination"}
+        print(f"Planned trajectory: {trajectory}")
+        return trajectory
 
     def evaluate_safety(self):
-        pass
+        """Evaluates the safety of the current plan."""
+        if not self.perception_data:
+            print("No perception data available to evaluate safety.")
+            return "Unsafe"
+        # Simulating safety check based on detected objects and lanes
+        detected_objects = self.perception_data.detect_objects()
+        if 'Pedestrian' in detected_objects:
+            print("Safety evaluation: Unsafe due to pedestrian.")
+            return "Unsafe"
+        print("Safety evaluation: Safe.")
+        return "Safe"
 
     def check_for_collision(self, trajectory):
-        pass
+        """Checks for potential collisions along the planned trajectory."""
+        if not trajectory:
+            print("No trajectory available to check for collisions.")
+            return False
+        # Simulating collision check
+        detected_objects = self.perception_data.detect_objects()
+        if 'Car' in detected_objects:
+            print("Collision risk detected with car.")
+            return True
+        print("No collision detected.")
+        return False
 
     def detect_lane_change(self):
-        pass
+        """Detects if a lane change is required."""
+        if not self.perception_data:
+            print("No perception data available to detect lane change.")
+            return False
+        # Simulating lane change detection
+        lanes = self.perception_data.detect_lanes()
+        if 'Left Lane' in lanes:
+            print("Lane change detected: Moving to Left Lane.")
+            return True
+        print("No lane change required.")
+        return False
 
     def plan_route(self):
-        pass
+        """Plans the overall route."""
+        if not self.vehicle_state:
+            print("No vehicle state available to plan route.")
+            return None
+        # Simulating route planning (e.g., to a destination)
+        route = {"start": self.vehicle_state, "end": "Destination"}
+        print(f"Planned route: {route}")
+        return route
 
     def publish_plan(self, bus):
-        pass
+        """Publishes the planned trajectory or route."""
+        if not self.vehicle_state:
+            print("No vehicle state available to publish plan.")
+            return
+        # Simulating plan publishing
+        print(f"Publishing plan: {self.vehicle_state} -> Destination")
+        bus.publish(self.vehicle_state)  # Assuming a bus object to publish to
+
+# Supporting classes for simulation
+class PIDController:
+    def __init__(self, kp=1.0, ki=0.0, kd=0.0):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.previous_error = 0
+        self.integral = 0
+
+    def compute(self, target, current):
+        error = target - current
+        self.integral += error
+        derivative = error - self.previous_error
+        output = self.kp * error + self.ki * self.integral + self.kd * derivative
+        self.previous_error = error
+        return output
+
+class VehicleState:
+    def __init__(self, speed=0.0, angle=0.0):
+        self.speed = speed
+        self.steering_angle = angle
+
+class TrajectoryPlanEvent:
+    def __init__(self, trajectory_points):
+        self.trajectory_points = trajectory_points
+
+class EventBus:
+    def publish(self, event_name, data):
+        print(f"Event Published: {event_name} -> {data}")
+
+class ReceivedMessage:
+    def __init__(self, raw_data, source):
+        self.raw_data = raw_data
+        self.source = source
+
 
 # 5.3.5 ControlModule
 class ControlModule:
+    def __init__(self):
+        self.steeringController = PIDController(kp=0.8)
+        self.speedController = PIDController(kp=1.0)
+        self.currentVehicleState = VehicleState()
+        self.acceleration = 0.0
+        self.brakingForce = 0.0
+        self.steeringAngle = 0.0
+        self.trajectory = []
+
     def handle_plan(self, event):
-        pass
+        self.trajectory = event.trajectory_points
+        print(f"Trajectory received with {len(self.trajectory)} points.")
 
     def execute_trajectory(self):
-        pass
+        for point in self.trajectory:
+            self.adjust_steering_angle(point['angle'])
+            self.adjust_speed(point['speed'])
+            self.read_vehicle_sensors()
 
     def adjust_steering_angle(self, target_angle):
-        pass
+        control_signal = self.steeringController.compute(target_angle, self.currentVehicleState.steering_angle)
+        self.steeringAngle = control_signal
+        print(f"Steering adjusted to: {self.steeringAngle:.2f}")
 
     def adjust_speed(self, target_speed):
-        pass
+        control_signal = self.speedController.compute(target_speed, self.currentVehicleState.speed)
+        if control_signal >= 0:
+            self.acceleration = control_signal
+            self.brakingForce = 0
+        else:
+            self.apply_brakes(-control_signal)
+        print(f"Speed control applied: Acceleration={self.acceleration:.2f}, Braking={self.brakingForce:.2f}")
 
     def apply_brakes(self, force):
-        pass
+        self.brakingForce = force
+        self.acceleration = 0
+        print(f"Brakes applied with force: {force:.2f}")
 
     def read_vehicle_sensors(self):
-        pass
+        # Simulate reading sensor data
+        self.currentVehicleState.speed += self.acceleration - self.brakingForce
+        self.currentVehicleState.steering_angle = self.steeringAngle
+        print(f"Sensor Readings -> Speed: {self.currentVehicleState.speed:.2f}, Angle: {self.currentVehicleState.steering_angle:.2f}")
 
     def detect_override(self):
-        pass
+        # Simulated driver override detection
+        override_detected = False  # This could be dynamic based on external flags
+        print(f"Override detected: {override_detected}")
+        return override_detected
 
     def publish_vehicle_state(self, bus):
-        pass
+        bus.publish("VehicleStateUpdate", {
+            "speed": self.currentVehicleState.speed,
+            "steering_angle": self.currentVehicleState.steering_angle
+        })
+
 
 # 5.3.6 CommunicationModule
 class CommunicationModule:
+    def __init__(self):
+        self.v2xStack = {}
+        self.cloudClient = {}
+        self.connectionStatus = True
+        self.securityContext = {}
+
     def broadcast_message(self, message):
-        pass
+        if self.connectionStatus:
+            print(f"Broadcasting V2X message: {message}")
+        else:
+            print("V2X broadcast failed: No connection")
 
     def receive_message(self):
-        pass
+        # Simulate receiving a message
+        message = ReceivedMessage("Traffic update: Congestion ahead", "infrastructure")
+        print(f"Received message from {message.source}: {message.raw_data}")
+        return message
 
     def parse_and_dispatch(self, msg):
-        pass
+        print(f"Parsing message: {msg.raw_data}")
+        if "Traffic" in msg.raw_data:
+            print("Dispatching event: TrafficAlert")
 
     def send_data_to_cloud(self, data):
-        pass
+        if self.connectionStatus:
+            print(f"Sending data to cloud: {data}")
+        else:
+            print("Cloud upload failed: No connection")
 
 # 5.3.7 SoftwareUpdateManager
 class SoftwareUpdateManager:
