@@ -98,7 +98,6 @@ class SensorFusion:
         }
 
 # 5.3.3 PerceptionModule
-# 5.3.3 PerceptionModule
 class PerceptionModule:
     def __init__(self):
         self.fused_data = None  # Will hold the latest fused sensor data (from SensorFusion)
