@@ -3,6 +3,7 @@
 import random
 import time
 import statistics
+from enum import Enum
 
 # Mock sensor data classes
 class SensorData:
@@ -376,85 +377,176 @@ class CommunicationModule:
 
 # 5.3.7 SoftwareUpdateManager
 class SoftwareUpdateManager:
+    def __init__(self, update_server_url):
+        self.updateServerUrl = update_server_url
+        self.currentVersion = "1.0.0"
+        self.status = "Idle"
+        self.updateHistory = []
+
     def check_for_updates(self):
-        pass
+        print(f"Checking for updates from {self.updateServerUrl}...")
+        # Simulated update info
+        if self.currentVersion != "1.1.0":
+            return {"version": "1.1.0", "filePath": "/tmp/update_1_1_0.pkg"}
+        return None
 
     def download_update(self):
-        pass
+        print("Downloading update...")
+        success = True  # Simulate successful download
+        self.status = "Downloaded" if success else "Download Failed"
+        return success
 
     def validate_update(self, file_path):
-        pass
+        print(f"Validating update at {file_path}...")
+        # Simulated validation check
+        is_valid = "update" in file_path
+        print("Validation", "succeeded." if is_valid else "failed.")
+        return is_valid
 
     def install_update(self, file_path):
-        pass
+        if self.validate_update(file_path):
+            print(f"Installing update from {file_path}...")
+            self.currentVersion = "1.1.0"
+            self.updateHistory.append(self.currentVersion)
+            self.status = "Installed"
+            print("Update installed successfully.")
+            return True
+        else:
+            print("Installation failed. Rolling back.")
+            self.rollback()
+            return False
 
     def rollback(self):
-        pass
+        if self.updateHistory:
+            previous = self.updateHistory[-2] if len(self.updateHistory) > 1 else "1.0.0"
+            self.currentVersion = previous
+            self.status = "Rolled back"
+            print(f"Rolled back to version {self.currentVersion}")
+            return True
+        print("No previous version to rollback to.")
+        return False
 
 # 5.3.8 InterfaceManager
+class HMIState(Enum):
+    DRIVER_VIEW_ACTIVE = 1
+    TECHNICIAN_DIAGNOSTICS_ACTIVE = 2
+
 class InterfaceManager:
+    def __init__(self, driver_display, technician_ui):
+        self.driverDisplay = driver_display
+        self.technicianUI = technician_ui
+        self.hmiState = HMIState.DRIVER_VIEW_ACTIVE
+
     def handle_system_event(self, event):
-        pass
+        print(f"Handling system event: {event}")
+        if event.get("type") == "alert":
+            self.driverDisplay.show_alert(event["message"])
+        elif event.get("type") == "diagnostic":
+            self.technicianUI.show_diagnostics(event["details"])
 
     def render_dashboard(self):
-        pass
+        print("Rendering driver dashboard...")
+        self.driverDisplay.update()
 
     def render_technician_ui(self, ui_type):
-        pass
+        print(f"Rendering technician UI: {ui_type}")
+        self.technicianUI.render(ui_type)
 
     def handle_user_input(self, event):
-        pass
+        print(f"User input received: {event}")
+        # Translate into actions or commands
+        if event.get("action") == "switch_view":
+            self.hmiState = HMIState.TECHNICIAN_DIAGNOSTICS_ACTIVE if self.hmiState == HMIState.DRIVER_VIEW_ACTIVE else HMIState.DRIVER_VIEW_ACTIVE
 
 # 5.3.9 Abstract Sensor Class
+class SensorStatus(Enum):
+    OFFLINE = 0
+    INITIALIZING = 1
+    ONLINE = 2
+    ERROR = 3
+
 class BaseSensor:
+    def __init__(self, sensor_id, sensor_type):
+        self.sensorID = sensor_id
+        self.sensorType = sensor_type
+        self.status = SensorStatus.OFFLINE
+        self.reading = None
+
     def initialize(self):
-        pass
+        """Perform necessary setup and initialization for sensor hardware."""
+        raise NotImplementedError("initialize() must be implemented by subclasses.")
 
     def get_status(self):
-        pass
+        """Retrieve the current operational status of the sensor."""
+        return self.status
 
     def read_data(self):
-        pass
+        """Read the latest data from the sensor."""
+        raise NotImplementedError("read_data() must be implemented by subclasses.")
 
     def run_selftest(self):
-        pass
-
+        """Initiate a self-diagnostic test on the sensor hardware."""
+        raise NotImplementedError("run_selftest() must be implemented by subclasses.")
 # 5.3.10 Specific Sensor Subclasses
 class LiDAR(BaseSensor):
-    def read_data(self):
-        pass
+    def __init__(self, sensor_id, config):
+        super().__init__(sensor_id, "LiDAR")
+        self.hardwareConfig = config
 
     def initialize(self):
-        pass
+        print(f"Initializing LiDAR sensor {self.sensorID}...")
+        self.status = SensorStatus.INITIALIZING
+        self.status = SensorStatus.ONLINE
 
     def run_selftest(self):
-        pass
+        print(f"Running LiDAR self-test...")
+        return True
+
+    def read_data(self):
+        self.reading = {"distance_map": [1.0, 2.5, 3.7]}
+        return self.reading
 
     def publish_reading(self):
-        pass
+        print(f"LiDAR {self.sensorID} reading: {self.reading}")
 
 class Camera(BaseSensor):
-    def read_data(self):
-        pass
+    def __init__(self, sensor_id, config):
+        super().__init__(sensor_id, "Camera")
+        self.hardwareConfig = config
 
     def initialize(self):
-        pass
+        print(f"Initializing Camera sensor {self.sensorID}...")
+        self.status = SensorStatus.INITIALIZING
+        self.status = SensorStatus.ONLINE
 
     def run_selftest(self):
-        pass
+        print("Camera self-test passed.")
+        return True
+
+    def read_data(self):
+        self.reading = {"frame": "image_data"}
+        return self.reading
 
     def publish_reading(self):
-        pass
+        print(f"Camera {self.sensorID} reading: {self.reading}")
 
 class Radar(BaseSensor):
-    def read_data(self):
-        pass
+    def __init__(self, sensor_id, config):
+        super().__init__(sensor_id, "Radar")
+        self.hardwareConfig = config
 
     def initialize(self):
-        pass
+        print(f"Initializing Radar sensor {self.sensorID}...")
+        self.status = SensorStatus.INITIALIZING
+        self.status = SensorStatus.ONLINE
 
     def run_selftest(self):
-        pass
+        print("Radar self-test successful.")
+        return True
+
+    def read_data(self):
+        self.reading = {"velocity_vector": [5.5, 0.2]}
+        return self.reading
 
     def publish_reading(self):
-        pass
+        print(f"Radar {self.sensorID} reading: {self.reading}")
